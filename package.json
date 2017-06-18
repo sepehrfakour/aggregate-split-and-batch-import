@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "algoliasearch": "^3.23.0",
+    "algoliasearch": "^3.23.0"
   }
 }
