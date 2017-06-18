@@ -3,8 +3,8 @@ const algoliasearch      = require('algoliasearch'),
       index              = client.initIndex(process.env.INDEX_NAME),
       contentDirName     = __dirname + '/../Test\ Content/', // Path to directory of JSON files to be imported
       CONTENT_MAX_LENGTH = 1000, // Max string length for each record.content
-      CONTENT_OVERLAP    = 100,  // Amount of text overlap
-      CHUNK_SIZE         = 1000; // Number of records to index per batch
+      CHUNK_SIZE         = 1000, // Number of records to index per batch
+      chunk              = require('chunk-text');
 
 const init = function () {
   let rawRecords       = [],
@@ -24,22 +24,14 @@ const init = function () {
         content       = post.content,
         contentLength = (content === null) ? 0 : content.length;
 
-    if (contentLength <= (CONTENT_MAX_LENGTH + CONTENT_OVERLAP)) {
-      let formattedPost = clone(post);
+    const contentChunks = chunk(content, CONTENT_MAX_LENGTH);
+    contentChunks.forEach((contentChunk) => {
+      const formattedPost = clone(post);
       formattedPost.post_id = counter;
-      formattedRecords.push(formattedPost);
-      return false;
-    }
-
-    // Break up long records
-    for (var i = 0; i <= (Math.floor(contentLength / CONTENT_MAX_LENGTH)); i++) {
-      let formattedPost = clone(post);
-      let contentSlice = content.slice((i * CONTENT_MAX_LENGTH) , (((i + 1) * CONTENT_MAX_LENGTH) + CONTENT_OVERLAP))
-      formattedPost.post_id = counter;
-      formattedPost.content = contentSlice;
+      formattedPost.content = contentChunk;
       formattedRecords.push(formattedPost);
       counter++;
-    }
+    });
   });
 
   for (var i = 0; i < formattedRecords.length; i += CHUNK_SIZE) {
@@ -66,12 +58,7 @@ const init = function () {
 };
 
 const clone = function (obj) {
-  // Shallow clone a simple JSON object
-  let clone = {};
-  Object.keys(obj).map((key) => {
-    clone[key] = obj[key];
-  });
-  return clone;
+  return Object.assign({}, obj);
 }
 
 init();
