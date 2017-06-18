@@ -58,12 +58,7 @@ const init = function () {
 };
 
 const clone = function (obj) {
-  // Shallow clone a simple JSON object
-  let clone = {};
-  Object.keys(obj).map((key) => {
-    clone[key] = obj[key];
-  });
-  return clone;
+  return Object.assign({}, obj);
 }
 
 init();
